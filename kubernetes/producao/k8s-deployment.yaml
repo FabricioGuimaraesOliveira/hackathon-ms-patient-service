@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fiap-paciente-deployment
+  labels:
+    app: fiap-paciente
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fiap-paciente
+  template:
+    metadata:
+      labels:
+        app: fiap-paciente
+    spec:
+      containers:
+        - name: fiap-paciente
+          image: 841162698708.dkr.ecr.us-east-1.amazonaws.com/hackathon-ms-patient-service:${GITHUB_SHA}
+          ports:
+            - containerPort: 8080
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: AWS_REGION
+              value: "us-east-1"
+            - name: DYNAMODB_TABLE_NAME
+              value: "pacientes-table"
+            - name: AWS_SQS_QUEUE_APPOINTMENT
+              value: "https://sqs.us-east-1.amazonaws.com/841162698708/appointment-queue"
+
+
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
